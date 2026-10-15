@@ -1,9 +1,7 @@
 import mongoose from "mongoose";
 import Notice from "../models/Notice.js";
+import uploadImage from "../utils/uploadImage.js";
 
-// @desc    get all published notices
-// @route   GET /api/notices
-// @access  public
 export const getNotices = async (req, res) => {
   try {
     const notices = await Notice.find({ published: true })
@@ -23,9 +21,6 @@ export const getNotices = async (req, res) => {
   }
 };
 
-// @desc    get a single notice
-// @route   GET /api/notices/:id
-// @access  public for published notices; admin can view drafts
 export const getNoticeById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -66,9 +61,6 @@ export const getNoticeById = async (req, res) => {
   }
 };
 
-// @desc    create a notice
-// @route   POST /api/notices
-// @access  admin
 export const createNotice = async (req, res) => {
   try {
     const {
@@ -78,7 +70,7 @@ export const createNotice = async (req, res) => {
       location,
       trainingDate,
       registrationDeadline,
-      imageUrl,
+      published,
     } = req.body;
 
     if (!title?.trim() || !content?.trim()) {
@@ -88,24 +80,35 @@ export const createNotice = async (req, res) => {
       });
     }
 
+    let imageUrl = null;
+
+    if (req.file) {
+      const uploadedImage = await uploadImage(req.file.buffer);
+      imageUrl = uploadedImage.url; // 👈 matches your helper's return shape
+    }
+
     const notice = await Notice.create({
-      title,
-      content,
+      title: title.trim(),
+      content: content.trim(),
       category,
       location,
       trainingDate: trainingDate || null,
       registrationDeadline: registrationDeadline || null,
-      imageUrl: imageUrl || null,
-      published: false,
+      imageUrl, // 👈 real Cloudinary URL
+      published: published === "true" || published === true,
       createdBy: req.user._id,
     });
 
     res.status(201).json({
       success: true,
-      message: "Notice created as a draft",
+      message: notice.published
+        ? "Notice created"
+        : "Notice created as a draft",
       notice,
     });
   } catch (error) {
+    console.error("createNotice error:", error);
+
     if (error.name === "ValidationError") {
       return res.status(400).json({
         success: false,
@@ -115,23 +118,19 @@ export const createNotice = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to create notice",
+      message: error.message || "Failed to create notice",
     });
   }
 };
 
-// @desc    Update a notice
-// @route   PATCH /api/notices/:id
-// @access  Admin
 export const updateNotice = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid notice ID",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid notice ID" });
     }
 
     const allowedFields = [
@@ -141,12 +140,10 @@ export const updateNotice = async (req, res) => {
       "location",
       "trainingDate",
       "registrationDeadline",
-      "imageUrl",
       "published",
     ];
 
     const updates = {};
-
     for (const field of allowedFields) {
       if (Object.prototype.hasOwnProperty.call(req.body, field)) {
         updates[field] = req.body[field];
@@ -154,22 +151,28 @@ export const updateNotice = async (req, res) => {
     }
 
     if (updates.title !== undefined && !updates.title?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Title cannot be empty",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Title cannot be empty" });
     }
-
     if (updates.content !== undefined && !updates.content?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Content cannot be empty",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Content cannot be empty" });
     }
 
+    if (updates.published !== undefined) {
+      updates.published =
+        updates.published === "true" || updates.published === true;
+    }
     if (updates.trainingDate === "") updates.trainingDate = null;
-    if (updates.registrationDeadline === "") {
+    if (updates.registrationDeadline === "")
       updates.registrationDeadline = null;
+
+    // 👇 new image replaces the old one
+    if (req.file) {
+      const uploadedImage = await uploadImage(req.file.buffer);
+      updates.imageUrl = uploadedImage.url;
     }
 
     const notice = await Notice.findByIdAndUpdate(id, updates, {
@@ -178,10 +181,9 @@ export const updateNotice = async (req, res) => {
     }).populate("createdBy", "name");
 
     if (!notice) {
-      return res.status(404).json({
-        success: false,
-        message: "Notice not found",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Notice not found" });
     }
 
     res.status(200).json({
@@ -190,23 +192,16 @@ export const updateNotice = async (req, res) => {
       notice,
     });
   } catch (error) {
+    console.error("updateNotice error:", error);
     if (error.name === "ValidationError" || error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid notice data",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid notice data" });
     }
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to update notice",
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// @desc    delete a notice
-// @route   dELETE /api/notices/:id
-// @access  admin
 export const deleteNotice = async (req, res) => {
   try {
     const { id } = req.params;
