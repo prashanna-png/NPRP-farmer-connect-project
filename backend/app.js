@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js";
 import queryRoutes from "./routes/queryRoutes.js";
+import noticeRoutes from "./routes/noticeRoutes.js";
 
 const app = express();
 
@@ -38,5 +39,6 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/queries", queryRoutes);
+app.use("/api/notices", noticeRoutes);
 
 export default app;
