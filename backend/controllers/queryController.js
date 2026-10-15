@@ -1,5 +1,7 @@
 import Query from "../models/Query.js";
 
+import User from "../models/User.js";
+
 export const createQuery = async (req, res) => {
   try {
     const { title, category, description, location } = req.body;
@@ -65,6 +67,185 @@ export const getMyQueries = async (req, res) => {
 
     return res.status(500).json({
       message: "Unable to retrieve your queries",
+    });
+  }
+};
+
+export const getExpertQueries = async (req, res) => {
+  try {
+    const filter =
+      req.user.role === "admin"
+        ? {}
+        : {
+            $or: [{ status: "pending" }, { assignedExpert: req.user._id }],
+          };
+
+    const queries = await Query.find(filter)
+      .populate("farmer", "name email")
+      .populate("assignedExpert", "name email")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      count: queries.length,
+      queries,
+    });
+  } catch (error) {
+    console.error("Get expert queries error:", error.message);
+    return res.status(500).json({
+      message: "Unable to retrieve queries",
+    });
+  }
+};
+
+export const assignQuery = async (req, res) => {
+  try {
+    const { expertId } = req.body;
+
+    if (!expertId) {
+      return res.status(400).json({
+        message: "Expert ID is required",
+      });
+    }
+
+    const expert = await User.findOne({
+      _id: expertId,
+      role: "expert",
+    });
+
+    if (!expert) {
+      return res.status(404).json({
+        message: "Expert account not found",
+      });
+    }
+
+    const query = await Query.findById(req.params.id);
+
+    if (!query) {
+      return res.status(404).json({
+        message: "Query not found",
+      });
+    }
+
+    if (query.status === "closed") {
+      return res.status(400).json({
+        message: "A closed query cannot be assigned",
+      });
+    }
+
+    query.assignedExpert = expert._id;
+    query.status = "assigned";
+
+    await query.save();
+
+    return res.status(200).json({
+      message: "Query assigned successfully",
+      query,
+    });
+  } catch (error) {
+    console.error("Assign query error:", error.message);
+    return res.status(500).json({
+      message: "Unable to assign query",
+    });
+  }
+};
+
+export const replyToQuery = async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message?.trim()) {
+      return res.status(400).json({
+        message: "Reply message is required",
+      });
+    }
+
+    const query = await Query.findById(req.params.id);
+
+    if (!query) {
+      return res.status(404).json({
+        message: "Query not found",
+      });
+    }
+
+    const isAdmin = req.user.role === "admin";
+    const isAssignedExpert =
+      req.user.role === "expert" &&
+      query.assignedExpert?.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isAssignedExpert) {
+      return res.status(403).json({
+        message: "You are not authorized to reply to this query",
+      });
+    }
+
+    if (query.status === "closed") {
+      return res.status(400).json({
+        message: "Cannot reply to a closed query",
+      });
+    }
+
+    query.messages.push({
+      sender: req.user._id,
+      message: message.trim(),
+    });
+
+    query.status = "answered";
+
+    await query.save();
+
+    return res.status(200).json({
+      message: "Reply submitted successfully",
+      query,
+    });
+  } catch (error) {
+    console.error("Reply to query error:", error.message);
+    return res.status(500).json({
+      message: "Unable to submit reply",
+    });
+  }
+};
+
+export const updateQueryStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowedStatuses = ["assigned", "answered", "closed"];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        message: "Invalid query status",
+      });
+    }
+
+    const query = await Query.findById(req.params.id);
+
+    if (!query) {
+      return res.status(404).json({
+        message: "Query not found",
+      });
+    }
+
+    const isAdmin = req.user.role === "admin";
+    const isAssignedExpert =
+      req.user.role === "expert" &&
+      query.assignedExpert?.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isAssignedExpert) {
+      return res.status(403).json({
+        message: "You are not authorized to update this query",
+      });
+    }
+
+    query.status = status;
+    await query.save();
+
+    return res.status(200).json({
+      message: "Query status updated successfully",
+      query,
+    });
+  } catch (error) {
+    console.error("Update query status error:", error.message);
+    return res.status(500).json({
+      message: "Unable to update query status",
     });
   }
 };
