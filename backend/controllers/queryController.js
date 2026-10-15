@@ -1,6 +1,7 @@
 import Query from "../models/Query.js";
 
 import User from "../models/User.js";
+import uploadImage from "../utils/uploadImage.js";
 
 export const createQuery = async (req, res) => {
   try {
@@ -26,6 +27,13 @@ export const createQuery = async (req, res) => {
       });
     }
 
+    let imageUrl = null;
+
+    if (req.file) {
+      const uploadedImage = await uploadImage(req.file.buffer);
+      imageUrl = uploadedImage.url;
+    }
+
     const query = await Query.create({
       farmer: req.user._id,
       title: title.trim(),
@@ -37,6 +45,7 @@ export const createQuery = async (req, res) => {
       },
       messages: [],
       status: "pending",
+      imageUrl,
     });
 
     return res.status(201).json({

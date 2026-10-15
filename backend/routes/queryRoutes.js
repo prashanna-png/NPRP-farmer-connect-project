@@ -12,10 +12,18 @@ import {
 } from "../controllers/queryController.js";
 
 import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
+import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", protect, authorizeRoles("farmer"), createQuery);
+router.post(
+  "/",
+  protect,
+  authorizeRoles("farmer"),
+  upload.single("image"),
+  createQuery,
+);
+
 router.get("/my-queries", protect, authorizeRoles("farmer"), getMyQueries);
 
 router.get(
