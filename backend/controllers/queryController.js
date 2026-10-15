@@ -249,3 +249,108 @@ export const updateQueryStatus = async (req, res) => {
     });
   }
 };
+
+export const getQueryById = async (req, res) => {
+  try {
+    const query = await Query.findById(req.params.id)
+      .populate("farmer", "name email")
+      .populate("assignedExpert", "name email")
+      .populate("messages.sender", "name role");
+
+    if (!query) {
+      return res.status(404).json({
+        message: "Query not found",
+      });
+    }
+
+    const isOwner = query.farmer._id.toString() === req.user._id.toString();
+
+    const isAssignedExpert =
+      query.assignedExpert &&
+      query.assignedExpert._id.toString() === req.user._id.toString();
+
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAssignedExpert && !isAdmin) {
+      return res.status(403).json({
+        message: "You are not authorized to view this query",
+      });
+    }
+
+    return res.status(200).json({ query });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Invalid query ID",
+      });
+    }
+
+    console.error("Get query details error:", error.message);
+
+    return res.status(500).json({
+      message: "Unable to retrieve query details",
+    });
+  }
+};
+
+export const addFarmerFollowUp = async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message?.trim()) {
+      return res.status(400).json({
+        message: "Follow-up message is required",
+      });
+    }
+
+    if (message.trim().length > 5000) {
+      return res.status(400).json({
+        message: "Message cannot exceed 5000 characters",
+      });
+    }
+
+    const query = await Query.findById(req.params.id);
+
+    if (!query) {
+      return res.status(404).json({
+        message: "Query not found",
+      });
+    }
+
+    if (query.farmer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "You can only follow up on your own queries",
+      });
+    }
+
+    if (query.status === "closed") {
+      return res.status(400).json({
+        message: "This query is closed and cannot receive follow-ups",
+      });
+    }
+
+    query.messages.push({
+      sender: req.user._id,
+      message: message.trim(),
+    });
+
+    await query.save();
+
+    return res.status(201).json({
+      message: "Follow-up submitted successfully",
+      query,
+    });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Invalid query ID",
+      });
+    }
+
+    console.error("Farmer follow-up error:", error.message);
+
+    return res.status(500).json({
+      message: "Unable to submit follow-up",
+    });
+  }
+};

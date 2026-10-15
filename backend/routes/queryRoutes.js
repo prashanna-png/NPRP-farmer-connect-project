@@ -7,6 +7,8 @@ import {
   assignQuery,
   replyToQuery,
   updateQueryStatus,
+  getQueryById,
+  addFarmerFollowUp,
 } from "../controllers/queryController.js";
 
 import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
@@ -37,6 +39,15 @@ router.patch(
   protect,
   authorizeRoles("expert", "admin"),
   updateQueryStatus,
+);
+
+router.get("/:id", protect, getQueryById);
+
+router.post(
+  "/:id/follow-up",
+  protect,
+  authorizeRoles("farmer"),
+  addFarmerFollowUp,
 );
 
 export default router;
