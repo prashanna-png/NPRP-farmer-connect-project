@@ -38,5 +38,6 @@ Thumbs.db
 # Coverage
 coverage/
 
+/NPRP_Farmer_Connect_Backend_and_Frontend_Guide.docx
 # Lock files (optional — see note below)
 # package-lock.json
