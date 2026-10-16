@@ -62,7 +62,7 @@ function NoticesPage() {
   };
 
   return (
-    <main className="notices-page my-4">
+    <main className="notices-page">
       <section className="notices-page-hero">
         <Container>
           <span className="section-eyebrow">NPRP FARMER CONNECT</span>
