@@ -11,7 +11,8 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { FaLeaf } from "react-icons/fa";
-import { useRegisterMutation } from "../slices/authApiSlice";
+import api from "../api/axios";
+
 function RegisterPage() {
   const navigate = useNavigate();
 
@@ -27,13 +28,12 @@ function RegisterPage() {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((previous) => ({ ...previous, [name]: value }));
   };
-
-  const [register, { isLoading }] = useRegisterMutation();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -44,8 +44,10 @@ function RegisterPage() {
       return;
     }
 
+    setLoading(true);
+
     try {
-      await register({
+      await api.post("/auth/register", {
         name: formData.name.trim(),
         email: formData.email.trim(),
         password: formData.password,
@@ -55,7 +57,7 @@ function RegisterPage() {
           municipality: formData.municipality.trim(),
           ward: formData.ward.trim(),
         },
-      }).unwrap();
+      });
 
       navigate("/login", {
         replace: true,
@@ -63,10 +65,12 @@ function RegisterPage() {
       });
     } catch (err) {
       setError(
-        err?.data?.message ||
-          err?.data?.error ||
-          "Registration failed. Please try again.",
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Registration failed. Please check your information and try again.",
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -204,9 +208,9 @@ function RegisterPage() {
                     type="submit"
                     variant="success"
                     className="w-100 mt-2"
-                    disabled={isLoading}
+                    disabled={loading}
                   >
-                    {isLoading ? (
+                    {loading ? (
                       <>
                         <Spinner size="sm" className="me-2" />
                         Creating account...
