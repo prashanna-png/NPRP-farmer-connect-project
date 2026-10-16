@@ -11,7 +11,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { FaLeaf } from "react-icons/fa";
-import api from "../api/axios";
+import { useLoginMutation } from "../slices/authApiSlice";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -20,30 +20,27 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [login, { isLoading }] = useLoginMutation();
 
   const successMessage = location.state?.message;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
-    setLoading(true);
 
     try {
-      await api.post("/auth/login", {
+      await login({
         email: email.trim(),
         password,
-      });
+      }).unwrap();
 
       navigate("/", { replace: true });
     } catch (err) {
       setError(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
+        err?.data?.message ||
+          err?.data?.error ||
           "Login failed. Please check your email and password.",
       );
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -97,9 +94,9 @@ function LoginPage() {
                     type="submit"
                     variant="success"
                     className="w-100"
-                    disabled={loading}
+                    disabled={isLoading}
                   >
-                    {loading ? (
+                    {isLoading ? (
                       <>
                         <Spinner size="sm" className="me-2" />
                         Logging in...
