@@ -52,7 +52,10 @@ function LoginPage() {
 
       dispatch(setCredentials(user));
 
-      navigate("/", { replace: true });
+      const destination = location.state?.from?.pathname;
+
+      navigate(destination || "/farmer/dashboard", { replace: true });
+      
     } catch (err) {
       setError(
         err.response?.data?.message ||

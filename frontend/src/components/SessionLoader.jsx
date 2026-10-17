@@ -1,23 +1,39 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { Spinner } from "react-bootstrap";
 
 import api from "../api/axios";
 import { setCredentials, clearCredentials } from "../slices/authSlice";
 
 function SessionLoader({ children }) {
-  const displatch = useDispatch();
+  const dispatch = useDispatch();
+  const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
     const restoreSession = async () => {
       try {
         const { data } = await api.get("/auth/me");
-        displatch(setCredentials(data.user));
+        dispatch(setCredentials(data.user));
       } catch {
-        displatch(clearCredentials());
+        dispatch(clearCredentials());
+      } finally {
+        setCheckingSession(false);
       }
     };
+
     restoreSession();
-  }, [displatch]);
+  }, [dispatch]);
+
+  if (checkingSession) {
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: "60vh" }}
+      >
+        <Spinner animation="border" variant="success" />
+      </div>
+    );
+  }
 
   return children;
 }
