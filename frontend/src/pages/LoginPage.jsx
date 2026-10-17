@@ -13,33 +13,51 @@ import {
 import { FaLeaf } from "react-icons/fa";
 import api from "../api/axios";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setCredentials } from "../slices/authSlice";
+
 function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const successMessage = location.state?.message;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const successMessage = location.state?.message;
+  const dispatch = useDispatch();
 
+  const userInfo = useSelector((state) => state.auth.userInfo);
+
+  console.log("Redux user:", userInfo);
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      await api.post("/auth/login", {
+      const { data } = await api.post("/auth/login", {
         email: email.trim(),
         password,
       });
+
+      const user = data.user;
+
+      if (!user) {
+        throw new Error(
+          "Login succeeded, but user information was not returned.",
+        );
+      }
+
+      dispatch(setCredentials(user));
 
       navigate("/", { replace: true });
     } catch (err) {
       setError(
         err.response?.data?.message ||
           err.response?.data?.error ||
+          err.message ||
           "Login failed. Please check your email and password.",
       );
     } finally {
