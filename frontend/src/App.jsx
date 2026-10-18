@@ -1,4 +1,8 @@
 import { Routes, Route } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { setCredentials, clearCredentials } from "./slices/authSlice";
+import api from "./api/axios";
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -26,6 +30,34 @@ import AdminExpertsPage from "./pages/AdminExpertsPage";
 import AdminManageNotices from "./pages/AdminManageNoticesPage";
 
 function App() {
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data } = await api.get("/auth/me");
+        dispatch(setCredentials({ userInfo: data.user }));
+      } catch {
+        dispatch(clearCredentials());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-success" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Header />
