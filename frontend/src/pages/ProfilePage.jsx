@@ -18,13 +18,12 @@ import {
 } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import api from "../api/axios";
-import { setCredentials } from "../slices/authSlice"; // Adjust path if needed
+import { setCredentials } from "../slices/authSlice"; 
 
 function ProfilePage() {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
 
-  // --- Profile Update State ---
   const [name, setName] = useState(userInfo?.name || "");
   const [phone, setPhone] = useState(userInfo?.phone || "");
   const [district, setDistrict] = useState(userInfo?.location?.district || "");
@@ -36,7 +35,6 @@ function ProfilePage() {
   const [updateError, setUpdateError] = useState("");
   const [loadingProfile, setLoadingProfile] = useState(false);
 
-  // --- Password Update State ---
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -44,7 +42,6 @@ function ProfilePage() {
   const [passError, setPassError] = useState("");
   const [loadingPass, setLoadingPass] = useState(false);
 
-  // Handle Profile Update
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setUpdateMsg("");
@@ -58,7 +55,6 @@ function ProfilePage() {
         location: { district, municipality, ward: Number(ward) || undefined },
       });
 
-      // Update Redux store with new user data
       dispatch(setCredentials({ userInfo: data.user }));
       setUpdateMsg("Profile updated successfully!");
     } catch (error) {
@@ -70,7 +66,6 @@ function ProfilePage() {
     }
   };
 
-  // Handle Password Update
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setPassMsg("");
@@ -104,7 +99,6 @@ function ProfilePage() {
       <h2 className="fw-bold mb-4">My Profile</h2>
 
       <Row className="g-4">
-        {/* Left Column: Account Info & Password */}
         <Col lg={4}>
           <Card className="shadow-sm border-0 mb-4">
             <Card.Body className="text-center p-4">
@@ -205,7 +199,6 @@ function ProfilePage() {
           </Card>
         </Col>
 
-        {/* Right Column: Edit Profile Form */}
         <Col lg={8}>
           <Card className="shadow-sm border-0">
             <Card.Body className="p-4">
