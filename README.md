@@ -1,4 +1,4 @@
-# NPRP Farmer Connect System 🌾
+# NPRP Farmer Connect System 
 
 A full-stack MERN application built to connect farmers with agricultural experts. Farmers can register, post their queries, and attach images (via Cloudinary), while experts can log in, browse the questions, and provide answers. 
 
@@ -22,7 +22,6 @@ A full-stack MERN application built to connect farmers with agricultural experts
 
 The repository is divided into two main folders:
 
-```text
 NPRP-Farmer-Connect-System/
 ├── backend/
 │   ├── config/          # DB connection & Cloudinary setup
