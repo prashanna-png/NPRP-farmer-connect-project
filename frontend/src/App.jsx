@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HomeRoute from "./components/HomeRoute";
+import ProfilePage from "./pages/ProfilePage";
 
 import NoticesPage from "./pages/NoticesPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -35,6 +36,9 @@ function App() {
         <Route element={<PublicOnlyRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+        </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["farmer"]} />}>
