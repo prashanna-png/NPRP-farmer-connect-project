@@ -29,6 +29,7 @@ function Header() {
         : userInfo?.role === "admin"
           ? "/admin/dashboard"
           : "/";
+
   const handleLogout = async () => {
     setLoggingOut(true);
 
@@ -160,9 +161,9 @@ function Header() {
                   Manage Experts
                 </Nav.Link>
 
-                <Nav.Link as={Link} to="/notices">
+                <Nav.Link as={Link} to="/admin/notices">
                   <FaBullhorn className="me-1" />
-                  Notices & Training
+                  Manage Notices
                 </Nav.Link>
 
                 <NavDropdown
@@ -175,6 +176,12 @@ function Header() {
                   id="admin-account-menu"
                   align="end"
                 >
+                  <NavDropdown.Item as={Link} to="/profile">
+                    My Profile
+                  </NavDropdown.Item>
+
+                  <NavDropdown.Divider />
+
                   <NavDropdown.Item
                     onClick={handleLogout}
                     disabled={loggingOut}

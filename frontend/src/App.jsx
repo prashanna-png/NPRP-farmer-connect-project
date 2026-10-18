@@ -23,6 +23,7 @@ import ExpertQuestionDetailsPage from "./pages/ExpertQuestionDetailsPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminQuestionsPage from "./pages/AdminQuestionsPage";
 import AdminExpertsPage from "./pages/AdminExpertsPage";
+import AdminManageNotices from "./pages/AdminManageNoticesPage";
 
 function App() {
   return (
@@ -61,6 +62,7 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/questions" element={<AdminQuestionsPage />} />
           <Route path="/admin/experts" element={<AdminExpertsPage />} />
+          <Route path="/admin/notices" element={<AdminManageNotices />} />
         </Route>
       </Routes>
 
