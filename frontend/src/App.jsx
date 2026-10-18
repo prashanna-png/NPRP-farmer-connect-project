@@ -16,6 +16,8 @@ import MyQuestionsPage from "./pages/MyQuestionsPage";
 import QueryDetailsPage from "./pages/QueryDetailsPage";
 
 import ExpertDashboard from "./pages/ExpertDashboard";
+import ExpertQuestionsPage from "./pages/ExpertQuestionsPage";
+import ExpertQuestionDetailsPage from "./pages/ExpertQuestionDetailsPage";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminQuestionsPage from "./pages/AdminQuestionsPage";
@@ -44,6 +46,11 @@ function App() {
 
         <Route element={<ProtectedRoute allowedRoles={["expert"]} />}>
           <Route path="/expert/dashboard" element={<ExpertDashboard />} />
+          <Route path="/expert/questions" element={<ExpertQuestionsPage />} />
+          <Route
+            path="/expert/questions/:id"
+            element={<ExpertQuestionDetailsPage />}
+          />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>

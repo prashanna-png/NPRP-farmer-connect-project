@@ -30,7 +30,6 @@ function AskExpertPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Update text fields
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -40,7 +39,6 @@ function AskExpertPage() {
     }));
   };
 
-  // Validate and preview selected image
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
 
@@ -65,7 +63,6 @@ function AskExpertPage() {
     setImagePreview(URL.createObjectURL(file));
   };
 
-  // Release preview URLs when replaced or component unmounts
   useEffect(() => {
     if (!imagePreview) return;
 
@@ -74,7 +71,6 @@ function AskExpertPage() {
     };
   }, [imagePreview]);
 
-  // Remove selected image
   const handleRemoveImage = () => {
     setImage(null);
     setImagePreview("");
@@ -84,7 +80,6 @@ function AskExpertPage() {
     }
   };
 
-  // Submit question and optional image
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);

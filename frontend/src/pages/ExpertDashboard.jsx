@@ -48,25 +48,15 @@ function ExpertDashboard() {
     fetchQuestions();
   }, []);
 
-  const pendingCount = questions.filter((q) => q.status === "pending").length;
-
-  const assignedCount = questions.filter(
-    (q) =>
-      q.status === "assigned" &&
-      String(q.assignedExpert?._id || q.assignedExpert) ===
-        String(userInfo?._id || userInfo?.id),
-  ).length;
+  const assignedCount = questions.filter((q) => q.status === "assigned").length;
 
   const answeredCount = questions.filter((q) => q.status === "answered").length;
 
+  const closedCount = questions.filter((q) => q.status === "closed").length;
+
   const stats = [
     {
-      label: "Pending questions",
-      count: pendingCount,
-      icon: <FaClock />,
-    },
-    {
-      label: "Assigned to me",
+      label: "Assigned questions",
       count: assignedCount,
       icon: <FaClipboardList />,
     },
@@ -74,6 +64,11 @@ function ExpertDashboard() {
       label: "Answered",
       count: answeredCount,
       icon: <FaCheckCircle />,
+    },
+    {
+      label: "Closed",
+      count: closedCount,
+      icon: <FaClock />,
     },
   ];
 
