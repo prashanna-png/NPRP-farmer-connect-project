@@ -51,11 +51,11 @@ function RegisterPage() {
         name: formData.name.trim(),
         email: formData.email.trim(),
         password: formData.password,
-        phone: formData.phone.trim(),
+        phone: formData.phone.trim() || undefined, // Sends undefined if empty
         location: {
           district: formData.district.trim(),
           municipality: formData.municipality.trim(),
-          ward: formData.ward.trim(),
+          ward: formData.ward.trim() ? Number(formData.ward.trim()) : undefined,
         },
       });
 

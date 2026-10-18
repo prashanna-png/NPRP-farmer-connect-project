@@ -45,7 +45,7 @@ function Header() {
   };
 
   return (
-    <Navbar expand="lg" bg="white" className="border-bottom py-3">
+    <Navbar expand="lg" bg="white" className="border-bottom">
       <Container>
         <Navbar.Brand
           as={Link}
@@ -214,7 +214,7 @@ function Header() {
                   as={Link}
                   to="/register"
                   variant="success"
-                  className="ms-lg-2"
+                  className="ms-lg-2 mt-2 mt-lg-0"
                 >
                   Register
                 </Button>

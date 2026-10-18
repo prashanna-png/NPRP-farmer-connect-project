@@ -13,7 +13,7 @@ import {
 import { FaLeaf } from "react-icons/fa";
 import api from "../api/axios";
 
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setCredentials } from "../slices/authSlice";
 
 function LoginPage() {
@@ -28,9 +28,6 @@ function LoginPage() {
 
   const dispatch = useDispatch();
 
-  const userInfo = useSelector((state) => state.auth.userInfo);
-
-  console.log("Redux user:", userInfo);
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
@@ -43,35 +40,25 @@ function LoginPage() {
       });
 
       const user = data.user;
+      if (!user) throw new Error("User information missing.");
 
-      if (!user) {
-        throw new Error(
-          "Login succeeded, but user information was not returned.",
-        );
-      }
-
-      dispatch(setCredentials(user));
+      dispatch(setCredentials({ userInfo: user }));
 
       const destination = location.state?.from?.pathname;
 
       if (destination) {
         navigate(destination, { replace: true });
-      } else if (data.user.role === "farmer") {
+      } else if (user.role === "farmer") {
         navigate("/farmer/dashboard", { replace: true });
-      } else if (data.user.role === "expert") {
+      } else if (user.role === "expert") {
         navigate("/expert/dashboard", { replace: true });
-      } else if (data.user.role === "admin") {
+      } else if (user.role === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {
         navigate("/", { replace: true });
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          err.message ||
-          "Login failed. Please check your email and password.",
-      );
+      setError(err.response?.data?.message || "Login failed.");
     } finally {
       setLoading(false);
     }
