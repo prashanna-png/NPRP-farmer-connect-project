@@ -1,7 +1,10 @@
 import express from "express";
 import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
+import { getExperts } from "../controllers/userController.js";
 
 const router = express.Router();
+
+router.get("/experts", protect, authorizeRoles("admin"), getExperts);
 
 router.get("/profile", protect, (req, res) => {
   res.status(200).json({

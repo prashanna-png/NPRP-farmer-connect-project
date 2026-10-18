@@ -83,11 +83,7 @@ export const getMyQueries = async (req, res) => {
 export const getExpertQueries = async (req, res) => {
   try {
     const filter =
-      req.user.role === "admin"
-        ? {}
-        : {
-            $or: [{ status: "pending" }, { assignedExpert: req.user._id }],
-          };
+      req.user.role === "admin" ? {} : { assignedExpert: req.user._id };
 
     const queries = await Query.find(filter)
       .populate("farmer", "name email")
@@ -100,6 +96,7 @@ export const getExpertQueries = async (req, res) => {
     });
   } catch (error) {
     console.error("Get expert queries error:", error.message);
+
     return res.status(500).json({
       message: "Unable to retrieve queries",
     });
@@ -230,6 +227,12 @@ export const updateQueryStatus = async (req, res) => {
     if (!query) {
       return res.status(404).json({
         message: "Query not found",
+      });
+    }
+
+    if (query.status === "closed") {
+      return res.status(400).json({
+        message: "A closed query cannot be reopened or updated",
       });
     }
 

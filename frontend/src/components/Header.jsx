@@ -21,8 +21,14 @@ function Header() {
 
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const homeLink = userInfo?.role === "farmer" ? "/farmer/dashboard" : "/";
-
+  const homeLink =
+    userInfo?.role === "farmer"
+      ? "/farmer/dashboard"
+      : userInfo?.role === "expert"
+        ? "/expert/dashboard"
+        : userInfo?.role === "admin"
+          ? "/admin/dashboard"
+          : "/";
   const handleLogout = async () => {
     setLoggingOut(true);
 
@@ -86,6 +92,89 @@ function Header() {
 
                   <NavDropdown.Divider />
 
+                  <NavDropdown.Item
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                  >
+                    <FaSignOutAlt className="me-2" />
+                    {loggingOut ? "Logging out..." : "Logout"}
+                  </NavDropdown.Item>
+                </NavDropdown>
+              </>
+            ) : userInfo?.role === "expert" ? (
+              <>
+                <Nav.Link as={Link} to="/expert/dashboard">
+                  <FaTachometerAlt className="me-1" />
+                  Dashboard
+                </Nav.Link>
+
+                <Nav.Link as={Link} to="/expert/questions">
+                  <FaComments className="me-1" />
+                  Farmer Questions
+                </Nav.Link>
+
+                <Nav.Link as={Link} to="/notices">
+                  <FaBullhorn className="me-1" />
+                  Notices & Training
+                </Nav.Link>
+
+                <NavDropdown
+                  title={
+                    <>
+                      <FaUser className="me-1" />
+                      {userInfo.name}
+                    </>
+                  }
+                  id="expert-account-menu"
+                  align="end"
+                >
+                  <NavDropdown.Item as={Link} to="/profile">
+                    My Profile
+                  </NavDropdown.Item>
+
+                  <NavDropdown.Divider />
+
+                  <NavDropdown.Item
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                  >
+                    <FaSignOutAlt className="me-2" />
+                    {loggingOut ? "Logging out..." : "Logout"}
+                  </NavDropdown.Item>
+                </NavDropdown>
+              </>
+            ) : userInfo?.role === "admin" ? (
+              <>
+                <Nav.Link as={Link} to="/admin/dashboard">
+                  <FaTachometerAlt className="me-1" />
+                  Dashboard
+                </Nav.Link>
+
+                <Nav.Link as={Link} to="/admin/questions">
+                  <FaComments className="me-1" />
+                  Manage Questions
+                </Nav.Link>
+
+                <Nav.Link as={Link} to="/admin/experts">
+                  <FaUser className="me-1" />
+                  Manage Experts
+                </Nav.Link>
+
+                <Nav.Link as={Link} to="/notices">
+                  <FaBullhorn className="me-1" />
+                  Notices & Training
+                </Nav.Link>
+
+                <NavDropdown
+                  title={
+                    <>
+                      <FaUser className="me-1" />
+                      {userInfo.name}
+                    </>
+                  }
+                  id="admin-account-menu"
+                  align="end"
+                >
                   <NavDropdown.Item
                     onClick={handleLogout}
                     disabled={loggingOut}

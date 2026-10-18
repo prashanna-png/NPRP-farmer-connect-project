@@ -1,7 +1,13 @@
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Container, Row, Col, Card, Button } from "react-bootstrap";
-import { FaLeaf, FaComments, FaBullhorn, FaUser } from "react-icons/fa";
+import {
+  FaLeaf,
+  FaComments,
+  FaBullhorn,
+  FaUser,
+  FaPaperPlane,
+} from "react-icons/fa";
 
 function FarmerDashboard() {
   const userInfo = useSelector((state) => state.auth.userInfo);
@@ -43,6 +49,12 @@ function FarmerDashboard() {
           Access agricultural information, ask NPRP experts questions, and
           explore training opportunities.
         </p>
+        <div className="mt-4">
+          <Button as={Link} to="/ask-expert" variant="success">
+            <FaPaperPlane className="me-2" />
+            Ask NPRP Expert
+          </Button>
+        </div>
       </div>
 
       <h2 className="h4 fw-bold mb-4">Your Dashboard</h2>

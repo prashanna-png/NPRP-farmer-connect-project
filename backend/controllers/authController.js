@@ -5,7 +5,7 @@ import generateToken from "../utils/generateToken.js";
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { name, email, password, phone, role } = req.body;
 
     if (!name?.trim() || !email?.trim() || !password) {
       return res.status(400).json({
@@ -34,7 +34,7 @@ export const registerUser = async (req, res) => {
       email: email.trim().toLowerCase(),
       password,
       phone,
-      role: "farmer",
+      role:role || "farmer",
     });
 
     return res.status(201).json({

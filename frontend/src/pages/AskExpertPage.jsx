@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Alert,
@@ -10,12 +10,12 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
-import { FaArrowLeft, FaPaperPlane } from "react-icons/fa";
-
+import { FaArrowLeft, FaPaperPlane, FaImage, FaTimes } from "react-icons/fa";
 import api from "../api/axios";
 
 function AskExpertPage() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -25,9 +25,12 @@ function AskExpertPage() {
     municipality: "",
   });
 
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Update text fields
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -37,25 +40,79 @@ function AskExpertPage() {
     }));
   };
 
+  // Validate and preview selected image
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError("Please select a JPG, PNG, or WebP image.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image size must be 5 MB or less.");
+      event.target.value = "";
+      return;
+    }
+
+    setError("");
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  // Release preview URLs when replaced or component unmounts
+  useEffect(() => {
+    if (!imagePreview) return;
+
+    return () => {
+      URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
+
+  // Remove selected image
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview("");
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Submit question and optional image
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      await api.post("/queries", {
-        title: formData.title.trim(),
-        category: formData.category,
-        description: formData.description.trim(),
-        location: {
-          district: formData.district.trim(),
-          municipality: formData.municipality.trim(),
-        },
-      });
+      const submissionData = new FormData();
+
+      submissionData.append("title", formData.title.trim());
+      submissionData.append("category", formData.category);
+      submissionData.append("description", formData.description.trim());
+      submissionData.append("location[district]", formData.district.trim());
+      submissionData.append(
+        "location[municipality]",
+        formData.municipality.trim(),
+      );
+
+      if (image) {
+        submissionData.append("image", image);
+      }
+
+      await api.post("/queries", submissionData);
 
       navigate("/my-queries", {
         replace: true,
-        state: { message: "Your question was submitted successfully." },
+        state: {
+          message: "Your question was submitted successfully.",
+        },
       });
     } catch (err) {
       setError(
@@ -76,7 +133,8 @@ function AskExpertPage() {
             to="/farmer/dashboard"
             className="text-decoration-none text-success d-inline-flex align-items-center gap-2 mb-4"
           >
-            <FaArrowLeft /> Back to Dashboard
+            <FaArrowLeft />
+            Back to Dashboard
           </Link>
 
           <div className="mb-4">
@@ -89,13 +147,23 @@ function AskExpertPage() {
 
           <Card className="border-0 shadow-sm rounded-4">
             <Card.Body className="p-4 p-md-5">
-              {error && <Alert variant="danger">{error}</Alert>}
+              {error && (
+                <Alert
+                  variant="danger"
+                  dismissible
+                  onClose={() => setError("")}
+                >
+                  {error}
+                </Alert>
+              )}
 
               <Form onSubmit={handleSubmit}>
+                {/* Question title */}
                 <Form.Group className="mb-4" controlId="queryTitle">
                   <Form.Label className="fw-semibold">
                     Question title
                   </Form.Label>
+
                   <Form.Control
                     name="title"
                     value={formData.title}
@@ -106,10 +174,12 @@ function AskExpertPage() {
                   />
                 </Form.Group>
 
+                {/* Category */}
                 <Form.Group className="mb-4" controlId="queryCategory">
                   <Form.Label className="fw-semibold">
                     Problem category
                   </Form.Label>
+
                   <Form.Select
                     name="category"
                     value={formData.category}
@@ -124,10 +194,12 @@ function AskExpertPage() {
                   </Form.Select>
                 </Form.Group>
 
+                {/* Description */}
                 <Form.Group className="mb-4" controlId="queryDescription">
                   <Form.Label className="fw-semibold">
                     Describe your problem
                   </Form.Label>
+
                   <Form.Control
                     as="textarea"
                     rows={5}
@@ -138,18 +210,72 @@ function AskExpertPage() {
                     maxLength={5000}
                     required
                   />
+
                   <Form.Text muted>
                     Include as much detail as possible to help the expert
                     understand your problem.
                   </Form.Text>
                 </Form.Group>
 
+                {/* Optional image upload */}
+                <Form.Group className="mb-4" controlId="queryImage">
+                  <Form.Label className="fw-semibold">
+                    <FaImage className="me-2 text-success" />
+                    Upload a photo (optional)
+                  </Form.Label>
+
+                  <Form.Control
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleImageChange}
+                    disabled={loading}
+                  />
+
+                  <Form.Text muted>
+                    Upload a clear photo of affected leaves, plants, pests, or
+                    other farming problems. JPG, PNG, or WebP; maximum 5 MB.
+                  </Form.Text>
+
+                  {imagePreview && (
+                    <div className="mt-3">
+                      <div className="border rounded-3 p-2">
+                        <img
+                          src={imagePreview}
+                          alt="Preview of your selected agricultural photo"
+                          className="d-block mx-auto"
+                          style={{
+                            maxWidth: "100%",
+                            maxHeight: "280px",
+                            objectFit: "contain",
+                            borderRadius: "8px",
+                          }}
+                        />
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline-danger"
+                        size="sm"
+                        className="mt-2"
+                        onClick={handleRemoveImage}
+                        disabled={loading}
+                      >
+                        <FaTimes className="me-1" />
+                        Remove photo
+                      </Button>
+                    </div>
+                  )}
+                </Form.Group>
+
+                {/* Farm location */}
                 <h2 className="h5 fw-bold mb-3">Your farm location</h2>
 
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-4" controlId="queryDistrict">
                       <Form.Label>District</Form.Label>
+
                       <Form.Control
                         name="district"
                         value={formData.district}
@@ -163,6 +289,7 @@ function AskExpertPage() {
                   <Col md={6}>
                     <Form.Group className="mb-4" controlId="queryMunicipality">
                       <Form.Label>Municipality / Rural Municipality</Form.Label>
+
                       <Form.Control
                         name="municipality"
                         value={formData.municipality}
@@ -174,6 +301,7 @@ function AskExpertPage() {
                   </Col>
                 </Row>
 
+                {/* Actions */}
                 <div className="d-flex flex-column flex-sm-row gap-3 mt-2">
                   <Button
                     type="submit"
@@ -183,7 +311,11 @@ function AskExpertPage() {
                   >
                     {loading ? (
                       <>
-                        <Spinner size="sm" className="me-2" />
+                        <Spinner
+                          animation="border"
+                          size="sm"
+                          className="me-2"
+                        />
                         Submitting...
                       </>
                     ) : (

@@ -12,6 +12,14 @@ import LoginPage from "./pages/LoginPage";
 import FarmerDashboard from "./pages/FarmerDashboard";
 
 import AskExpertPage from "./pages/AskExpertPage";
+import MyQuestionsPage from "./pages/MyQuestionsPage";
+import QueryDetailsPage from "./pages/QueryDetailsPage";
+
+import ExpertDashboard from "./pages/ExpertDashboard";
+
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminQuestionsPage from "./pages/AdminQuestionsPage";
+import AdminExpertsPage from "./pages/AdminExpertsPage";
 
 function App() {
   return (
@@ -29,6 +37,19 @@ function App() {
 
         <Route element={<ProtectedRoute allowedRoles={["farmer"]} />}>
           <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+          <Route path="/ask-expert" element={<AskExpertPage />} />
+          <Route path="/my-queries" element={<MyQuestionsPage />} />
+          <Route path="/my-queries/:id" element={<QueryDetailsPage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={["expert"]} />}>
+          <Route path="/expert/dashboard" element={<ExpertDashboard />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/questions" element={<AdminQuestionsPage />} />
+          <Route path="/admin/experts" element={<AdminExpertsPage />} />
         </Route>
       </Routes>
 

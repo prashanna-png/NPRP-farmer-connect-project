@@ -54,8 +54,17 @@ function LoginPage() {
 
       const destination = location.state?.from?.pathname;
 
-      navigate(destination || "/farmer/dashboard", { replace: true });
-      
+      if (destination) {
+        navigate(destination, { replace: true });
+      } else if (data.user.role === "farmer") {
+        navigate("/farmer/dashboard", { replace: true });
+      } else if (data.user.role === "expert") {
+        navigate("/expert/dashboard", { replace: true });
+      } else if (data.user.role === "admin") {
+        navigate("/admin/dashboard", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     } catch (err) {
       setError(
         err.response?.data?.message ||
