@@ -15,7 +15,7 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: "https://nprp-farmer-connect-project.vercel.app", 
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
   }),
 );
