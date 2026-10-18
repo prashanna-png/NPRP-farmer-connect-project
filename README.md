@@ -21,7 +21,7 @@ A full-stack MERN application built to connect farmers with agricultural experts
 ## 📁 Project Structure
 
 The repository is divided into two main folders:
-
+```text
 NPRP-Farmer-Connect-System/
 ├── backend/
 │   ├── config/          # DB connection & Cloudinary setup
