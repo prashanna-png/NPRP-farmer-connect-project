@@ -1,5 +1,16 @@
 import { Link } from "react-router-dom";
-import { Container, Row, Col, Button, Card } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Button,
+  Card,
+  Badge,
+  Alert,
+  Spinner,
+} from "react-bootstrap";
+import { useEffect, useState } from "react";
+
 import {
   FaSeedling,
   FaBullhorn,
@@ -8,6 +19,7 @@ import {
   FaBug,
   FaFlask,
 } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt } from "react-icons/fa";
 
 const services = [
   {
@@ -29,8 +41,56 @@ const services = [
       "Explore guidance on soil conditions, nutrient management, and potato cultivation practices.",
   },
 ];
+const API_URL = "http://localhost:5000/api/notices";
 
 function HomePage() {
+  const [notices, setNotices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(API_URL, {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Unable to load notices. Please try again later.");
+        }
+
+        const data = await response.json();
+
+        const noticeList = Array.isArray(data)
+          ? data
+          : (data.notices ?? data.data ?? []);
+
+        setNotices(noticeList);
+      } catch (err) {
+        setError(err.message || "Something went wrong while loading notices.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotices();
+  }, []);
+  const formatDate = (date) => {
+    if (!date) return null;
+
+    const parsedDate = new Date(date);
+    if (Number.isNaN(parsedDate.getTime())) return null;
+
+    return parsedDate.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
     <>
       <section className="hero-section">
@@ -148,12 +208,113 @@ function HomePage() {
             </Col>
           </Row>
 
-          <div className="notice-placeholder mt-4">
-            <FaBullhorn />
-            <p>
-              Published NPRP notices will appear here when the notices API is
-              connected.
-            </p>
+          <div className="notice-placeholder mt-4 d-flex flex-column">
+            {/* Wrapped in a Fragment to group them as one flex item */}
+            <>
+              <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 w-100">
+                <div>
+                  <h2 className="mb-0 d-flex align-items-center gap-2">
+                    <FaBullhorn /> Latest Notices
+                  </h2>
+                </div>
+
+                {!loading && !error && (
+                  <Badge bg="success" pill>
+                    {notices.length}{" "}
+                    {notices.length === 1 ? "notice" : "notices"}
+                  </Badge>
+                )}
+              </div>
+
+              {loading && (
+                <div className="text-center py-5 w-100">
+                  <Spinner animation="border" variant="success" />
+                  <p className="text-muted mt-3">Loading notices...</p>
+                </div>
+              )}
+
+              {error && !loading && (
+                <Alert variant="danger" className="w-100">
+                  {error}
+                </Alert>
+              )}
+
+              {!loading && !error && notices.length === 0 && (
+                <div className="notice-empty-state text-center w-100">
+                  <FaBullhorn />
+                  <h3>No notices available yet</h3>
+                  <p>
+                    NPRP notices and agricultural updates will appear here when
+                    they are published.
+                  </p>
+                </div>
+              )}
+
+              {!loading && !error && notices.length > 0 && (
+                <Row className="g-4 w-100">
+                  {notices.map((notice) => (
+                    <Col md={6} lg={4} key={notice._id}>
+                      <Card className="notice-card h-100">
+                        {notice.imageUrl && (
+                          <Card.Img
+                            variant="top"
+                            src={notice.imageUrl}
+                            alt={notice.title}
+                          />
+                        )}
+
+                        <Card.Body className="d-flex flex-column">
+                          <div className="mb-3">
+                            <Badge bg="success" className="notice-category">
+                              {notice.category || "General"}
+                            </Badge>
+                          </div>
+
+                          <Card.Title>{notice.title}</Card.Title>
+                          <Card.Text>{notice.content}</Card.Text>
+
+                          <div className="notice-meta mt-auto">
+                            {formatDate(notice.trainingDate) && (
+                              <div>
+                                <FaCalendarAlt />
+                                <span>
+                                  Training: {formatDate(notice.trainingDate)}
+                                </span>
+                              </div>
+                            )}
+
+                            {notice.location && (
+                              <div>
+                                <FaMapMarkerAlt />
+                                <span>
+                                  {typeof notice.location === "string"
+                                    ? notice.location
+                                    : [
+                                        notice.location.district,
+                                        notice.location.municipality,
+                                      ]
+                                        .filter(Boolean)
+                                        .join(", ")}
+                                </span>
+                              </div>
+                            )}
+
+                            {formatDate(notice.createdAt) && (
+                              <div>
+                                <FaCalendarAlt />
+                                <span>
+                                  Published: {formatDate(notice.createdAt)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              )}
+            </>
           </div>
         </Container>
       </section>
