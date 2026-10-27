@@ -10,7 +10,7 @@ import {
   Spinner,
   Table,
 } from "react-bootstrap";
-import { FaUsers, FaSyncAlt } from "react-icons/fa";
+import { FaUsers, FaSyncAlt, FaUser } from "react-icons/fa";
 import api from "../api/axios";
 
 function AdminExpertsPage() {
@@ -101,8 +101,27 @@ function AdminExpertsPage() {
                   {experts.map((expert, index) => (
                     <tr key={expert._id}>
                       <td>{index + 1}</td>
-                      <td className="fw-semibold">{expert.name}</td>
+
+                      <td>
+                        <div className="d-flex align-items-center gap-3">
+                          {expert.profilePicture ? (
+                            <img
+                              src={expert.profilePicture}
+                              alt={`${expert.name}'s profile`}
+                              className="expert-list-avatar"
+                            />
+                          ) : (
+                            <div className="expert-list-avatar expert-list-avatar-fallback">
+                              <FaUser />
+                            </div>
+                          )}
+
+                          <span className="fw-semibold">{expert.name}</span>
+                        </div>
+                      </td>
+
                       <td>{expert.email}</td>
+
                       <td>
                         <Badge bg="success">Expert</Badge>
                       </td>

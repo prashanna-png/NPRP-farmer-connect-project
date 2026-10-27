@@ -30,6 +30,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    profilePicture: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     location: {
       district: String,
       municipality: String,

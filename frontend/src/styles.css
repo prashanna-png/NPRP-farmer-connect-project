@@ -6,19 +6,49 @@
   --border: #e3eae5;
   --soft-green: #edf6ef;
 }
-
-body {
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
   margin: 0;
-  color: var(--text);
-  background: #fff;
-  font-family: Arial, sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1 0 auto;
 }
 
 .site-header {
   background: rgba(255, 255, 255, 0.97);
   border-bottom: 1px solid var(--border);
 }
+.expert-list-avatar {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #dee2e6;
+}
 
+.expert-list-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e8f5e9;
+  color: #198754;
+  font-size: 16px;
+}
 .brand {
   color: var(--primary-dark) !important;
   font-size: 17px;
@@ -57,8 +87,14 @@ body {
   --bs-btn-hover-bg: var(--primary);
   --bs-btn-hover-border-color: var(--primary);
 }
-
-/* Landing page hero */
+.header-profile-picture {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+  vertical-align: middle;
+}
 .hero-section {
   padding: 85px 0;
   background:
@@ -160,7 +196,6 @@ body {
   font-size: 12px;
 }
 
-/* Shared section headings */
 .services-section,
 .notices-section {
   padding: 85px 0;
@@ -197,7 +232,6 @@ body {
   line-height: 1.8;
 }
 
-/* Service cards */
 .service-card {
   padding: 15px;
   border: 1px solid #e4ece5;
@@ -251,7 +285,6 @@ body {
   color: #104b32;
 }
 
-/* Latest notices placeholder */
 .notices-section {
   background: #fff;
 }
@@ -277,7 +310,6 @@ body {
   font-size: 14px;
 }
 
-/* Responsive adjustments */
 @media (max-width: 991px) {
   .hero-section {
     padding: 60px 0;

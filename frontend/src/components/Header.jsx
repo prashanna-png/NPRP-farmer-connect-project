@@ -44,6 +44,45 @@ function Header() {
     }
   };
 
+  const accountTitle = (
+    <span className="header-account">
+      {userInfo?.profilePicture ? (
+        <img
+          src={userInfo.profilePicture}
+          alt={`${userInfo.name}'s profile`}
+          className="header-profile-picture"
+        />
+      ) : (
+        <span className="header-profile-fallback">
+          <FaUser />
+        </span>
+      )}
+
+      <span className="header-account-name">{userInfo?.name}</span>
+    </span>
+  );
+
+  const accountMenu = (id) => (
+    <NavDropdown
+      title={accountTitle}
+      id={id}
+      align="end"
+      className="header-account-dropdown"
+    >
+      <NavDropdown.Item as={Link} to="/profile">
+        <FaUser className="me-2" />
+        My Profile
+      </NavDropdown.Item>
+
+      <NavDropdown.Divider />
+
+      <NavDropdown.Item onClick={handleLogout} disabled={loggingOut}>
+        <FaSignOutAlt className="me-2" />
+        {loggingOut ? "Logging out..." : "Logout"}
+      </NavDropdown.Item>
+    </NavDropdown>
+  );
+
   return (
     <Navbar expand="lg" bg="white" className="border-bottom">
       <Container>
@@ -77,30 +116,7 @@ function Header() {
                   Notices & Training
                 </Nav.Link>
 
-                <NavDropdown
-                  title={
-                    <>
-                      <FaUser className="me-1" />
-                      {userInfo.name}
-                    </>
-                  }
-                  id="farmer-account-menu"
-                  align="end"
-                >
-                  <NavDropdown.Item as={Link} to="/profile">
-                    My Profile
-                  </NavDropdown.Item>
-
-                  <NavDropdown.Divider />
-
-                  <NavDropdown.Item
-                    onClick={handleLogout}
-                    disabled={loggingOut}
-                  >
-                    <FaSignOutAlt className="me-2" />
-                    {loggingOut ? "Logging out..." : "Logout"}
-                  </NavDropdown.Item>
-                </NavDropdown>
+                {accountMenu("farmer-account-menu")}
               </>
             ) : userInfo?.role === "expert" ? (
               <>
@@ -119,30 +135,7 @@ function Header() {
                   Notices & Training
                 </Nav.Link>
 
-                <NavDropdown
-                  title={
-                    <>
-                      <FaUser className="me-1" />
-                      {userInfo.name}
-                    </>
-                  }
-                  id="expert-account-menu"
-                  align="end"
-                >
-                  <NavDropdown.Item as={Link} to="/profile">
-                    My Profile
-                  </NavDropdown.Item>
-
-                  <NavDropdown.Divider />
-
-                  <NavDropdown.Item
-                    onClick={handleLogout}
-                    disabled={loggingOut}
-                  >
-                    <FaSignOutAlt className="me-2" />
-                    {loggingOut ? "Logging out..." : "Logout"}
-                  </NavDropdown.Item>
-                </NavDropdown>
+                {accountMenu("expert-account-menu")}
               </>
             ) : userInfo?.role === "admin" ? (
               <>
@@ -166,30 +159,7 @@ function Header() {
                   Manage Notices
                 </Nav.Link>
 
-                <NavDropdown
-                  title={
-                    <>
-                      <FaUser className="me-1" />
-                      {userInfo.name}
-                    </>
-                  }
-                  id="admin-account-menu"
-                  align="end"
-                >
-                  <NavDropdown.Item as={Link} to="/profile">
-                    My Profile
-                  </NavDropdown.Item>
-
-                  <NavDropdown.Divider />
-
-                  <NavDropdown.Item
-                    onClick={handleLogout}
-                    disabled={loggingOut}
-                  >
-                    <FaSignOutAlt className="me-2" />
-                    {loggingOut ? "Logging out..." : "Logout"}
-                  </NavDropdown.Item>
-                </NavDropdown>
+                {accountMenu("admin-account-menu")}
               </>
             ) : (
               <>

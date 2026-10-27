@@ -34,7 +34,7 @@ export const registerUser = async (req, res) => {
       email: email.trim().toLowerCase(),
       password,
       phone,
-      role:role || "farmer",
+      role: role || "farmer",
     });
 
     return res.status(201).json({
@@ -90,6 +90,7 @@ export const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        profilePicture: user.profilePicture || "",
       },
     });
   } catch (error) {
@@ -126,9 +127,10 @@ export const getCurrentUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        profilePicture: user.profilePicture || "",
       },
     });
-  } catch {
+  } catch (error) {
     return res.status(401).json({
       message: "Invalid or expired session",
     });

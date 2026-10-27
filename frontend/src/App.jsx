@@ -59,47 +59,48 @@ function App() {
   }
 
   return (
-    <>
+    <div className="app-layout">
       <Header />
 
-      <Routes>
-        <Route path="/" element={<HomeRoute />} />
-        <Route path="/notices" element={<NoticesPage />} />
+      <main className="app-main">
+        <Routes>
+          <Route path="/" element={<HomeRoute />} />
+          <Route path="/notices" element={<NoticesPage />} />
 
-        <Route element={<PublicOnlyRoute />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-        </Route>
-        <Route element={<ProtectedRoute />}>
-          <Route path="/profile" element={<ProfilePage />} />
-        </Route>
+          <Route element={<PublicOnlyRoute />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={["farmer"]} />}>
-          <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
-          <Route path="/ask-expert" element={<AskExpertPage />} />
-          <Route path="/my-queries" element={<MyQuestionsPage />} />
-          <Route path="/my-queries/:id" element={<QueryDetailsPage />} />
-        </Route>
+          <Route element={<ProtectedRoute allowedRoles={["farmer"]} />}>
+            <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+            <Route path="/ask-expert" element={<AskExpertPage />} />
+            <Route path="/my-queries" element={<MyQuestionsPage />} />
+            <Route path="/my-queries/:id" element={<QueryDetailsPage />} />
+          </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={["expert"]} />}>
-          <Route path="/expert/dashboard" element={<ExpertDashboard />} />
-          <Route path="/expert/questions" element={<ExpertQuestionsPage />} />
-          <Route
-            path="/expert/questions/:id"
-            element={<ExpertQuestionDetailsPage />}
-          />
-        </Route>
+          <Route element={<ProtectedRoute allowedRoles={["expert"]} />}>
+            <Route path="/expert/dashboard" element={<ExpertDashboard />} />
+            <Route path="/expert/questions" element={<ExpertQuestionsPage />} />
+            <Route
+              path="/expert/questions/:id"
+              element={<ExpertQuestionDetailsPage />}
+            />
+          </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/questions" element={<AdminQuestionsPage />} />
-          <Route path="/admin/experts" element={<AdminExpertsPage />} />
-          <Route path="/admin/notices" element={<AdminManageNotices />} />
-        </Route>
-      </Routes>
-
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/questions" element={<AdminQuestionsPage />} />
+            <Route path="/admin/experts" element={<AdminExpertsPage />} />
+            <Route path="/admin/notices" element={<AdminManageNotices />} />
+          </Route>
+        </Routes>
+      </main>
       <Footer />
-    </>
+    </div>
   );
 }
 

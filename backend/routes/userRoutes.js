@@ -1,20 +1,18 @@
 import express from "express";
-import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
 
-import { 
-  getExperts, 
-  updateUserProfile, 
-  updateUserPassword 
+import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
+import upload from "../middleware/uploadMiddleware.js";
+
+import {
+  getExperts,
+  updateUserProfile,
+  updateUserPassword,
+  updateProfilePicture,
 } from "../controllers/userController.js";
 
 const router = express.Router();
 
 router.get("/experts", protect, authorizeRoles("admin"), getExperts);
-
-
-router.put("/profile", protect, updateUserProfile);
-
-router.put("/password", protect, updateUserPassword);
 
 router.get("/profile", protect, (req, res) => {
   res.status(200).json({
@@ -23,9 +21,23 @@ router.get("/profile", protect, (req, res) => {
       name: req.user.name,
       email: req.user.email,
       role: req.user.role,
+      phone: req.user.phone,
+      location: req.user.location,
+      profilePicture: req.user.profilePicture || "",
     },
   });
 });
+
+router.put("/profile", protect, updateUserProfile);
+
+router.put(
+  "/profile/picture",
+  protect,
+  upload.single("profilePicture"),
+  updateProfilePicture,
+);
+
+router.put("/password", protect, updateUserPassword);
 
 router.get(
   "/expert-test",

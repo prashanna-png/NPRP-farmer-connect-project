@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Container,
   Row,
@@ -15,14 +15,16 @@ import {
   FaLock,
   FaEnvelope,
   FaPhone,
+  FaCamera,
 } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import api from "../api/axios";
-import { setCredentials } from "../slices/authSlice"; 
+import { setCredentials } from "../slices/authSlice";
 
 function ProfilePage() {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
+  const fileInputRef = useRef(null);
 
   const [name, setName] = useState(userInfo?.name || "");
   const [phone, setPhone] = useState(userInfo?.phone || "");
@@ -31,6 +33,7 @@ function ProfilePage() {
     userInfo?.location?.municipality || "",
   );
   const [ward, setWard] = useState(userInfo?.location?.ward || "");
+
   const [updateMsg, setUpdateMsg] = useState("");
   const [updateError, setUpdateError] = useState("");
   const [loadingProfile, setLoadingProfile] = useState(false);
@@ -42,6 +45,92 @@ function ProfilePage() {
   const [passError, setPassError] = useState("");
   const [loadingPass, setLoadingPass] = useState(false);
 
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [pictureError, setPictureError] = useState("");
+  const [pictureMsg, setPictureMsg] = useState("");
+  const [loadingPicture, setLoadingPicture] = useState(false);
+
+  const profilePicture = userInfo?.profilePicture || "";
+  const displayPicture = previewUrl || profilePicture;
+  const initials = userInfo?.name?.trim()?.charAt(0)?.toUpperCase() || "U";
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handlePictureSelect = (e) => {
+    const file = e.target.files?.[0];
+
+    setPictureError("");
+    setPictureMsg("");
+
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+    if (!allowedTypes.includes(file.type)) {
+      setPictureError("Choose a JPG, PNG, WebP, or GIF image.");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setPictureError("Image size must be 5 MB or less.");
+      e.target.value = "";
+      return;
+    }
+
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handlePictureUpload = async (e) => {
+    e.preventDefault();
+
+    if (!selectedFile) {
+      setPictureError("Please select a profile picture first.");
+      return;
+    }
+
+    setLoadingPicture(true);
+    setPictureError("");
+    setPictureMsg("");
+
+    try {
+      const formData = new FormData();
+      formData.append("profilePicture", selectedFile);
+
+      const { data } = await api.put("/users/profile/picture", formData);
+
+      const updatedUser = {
+        ...userInfo,
+        ...data.user,
+      };
+
+      dispatch(setCredentials({ userInfo: updatedUser }));
+
+      setSelectedFile(null);
+      setPreviewUrl("");
+      setPictureMsg("Profile picture updated successfully!");
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      setPictureError(
+        error.response?.data?.message ||
+          "Failed to upload profile picture. Please try again.",
+      );
+    } finally {
+      setLoadingPicture(false);
+    }
+  };
+
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setUpdateMsg("");
@@ -52,10 +141,22 @@ function ProfilePage() {
       const { data } = await api.put("/users/profile", {
         name,
         phone,
-        location: { district, municipality, ward: Number(ward) || undefined },
+        location: {
+          district,
+          municipality,
+          ward: Number(ward) || undefined,
+        },
       });
 
-      dispatch(setCredentials({ userInfo: data.user }));
+      dispatch(
+        setCredentials({
+          userInfo: {
+            ...userInfo,
+            ...data.user,
+          },
+        }),
+      );
+
       setUpdateMsg("Profile updated successfully!");
     } catch (error) {
       setUpdateError(
@@ -72,15 +173,23 @@ function ProfilePage() {
     setPassError("");
 
     if (newPassword !== confirmPassword) {
-      return setPassError("New passwords do not match");
+      setPassError("New passwords do not match");
+      return;
     }
+
     if (newPassword.length < 8) {
-      return setPassError("Password must be at least 8 characters");
+      setPassError("Password must be at least 8 characters");
+      return;
     }
 
     setLoadingPass(true);
+
     try {
-      await api.put("/users/password", { currentPassword, newPassword });
+      await api.put("/users/password", {
+        currentPassword,
+        newPassword,
+      });
+
       setPassMsg("Password changed successfully!");
       setCurrentPassword("");
       setNewPassword("");
@@ -102,13 +211,78 @@ function ProfilePage() {
         <Col lg={4}>
           <Card className="shadow-sm border-0 mb-4">
             <Card.Body className="text-center p-4">
-              <div
-                className="bg-success text-white rounded-circle d-inline-flex justify-content-center align-items-center mb-3"
-                style={{ width: "80px", height: "80px", fontSize: "2rem" }}
-              >
-                {userInfo?.name?.charAt(0).toUpperCase()}
+              <div className="position-relative d-inline-block mb-3">
+                {displayPicture ? (
+                  <img
+                    src={displayPicture}
+                    alt={`${userInfo?.name || "User"} profile`}
+                    className="rounded-circle border"
+                    style={{
+                      width: "110px",
+                      height: "110px",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="bg-success text-white rounded-circle d-flex justify-content-center align-items-center"
+                    style={{
+                      width: "110px",
+                      height: "110px",
+                      fontSize: "2.5rem",
+                    }}
+                  >
+                    {initials}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className="position-absolute bottom-0 end-0 border-0 rounded-circle bg-success text-white d-flex justify-content-center align-items-center shadow"
+                  style={{ width: "36px", height: "36px" }}
+                  onClick={() => fileInputRef.current?.click()}
+                  aria-label="Change profile picture"
+                  title="Change profile picture"
+                >
+                  <FaCamera />
+                </button>
               </div>
+
+              <Form onSubmit={handlePictureUpload}>
+                <Form.Control
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handlePictureSelect}
+                  className="d-none"
+                />
+
+                {pictureError && (
+                  <Alert variant="danger" className="py-2 text-start">
+                    {pictureError}
+                  </Alert>
+                )}
+
+                {pictureMsg && (
+                  <Alert variant="success" className="py-2 text-start">
+                    {pictureMsg}
+                  </Alert>
+                )}
+
+                {selectedFile && (
+                  <Button
+                    type="submit"
+                    variant="success"
+                    className="w-100 mb-3"
+                    disabled={loadingPicture}
+                  >
+                    {loadingPicture ? "Uploading..." : "Save Picture"}
+                  </Button>
+                )}
+              </Form>
+
               <h4 className="fw-bold mb-1">{userInfo?.name}</h4>
+
               <Badge
                 bg={
                   userInfo?.role === "expert"
@@ -123,17 +297,22 @@ function ProfilePage() {
               </Badge>
 
               <div className="text-start mt-4">
-                <p className="mb-2 text-muted">
-                  <FaEnvelope className="me-2" /> {userInfo?.email}
+                <p className="mb-2 text-muted text-break">
+                  <FaEnvelope className="me-2" />
+                  {userInfo?.email}
                 </p>
+
                 <p className="mb-2 text-muted">
-                  <FaPhone className="me-2" />{" "}
+                  <FaPhone className="me-2" />
                   {userInfo?.phone || "No phone added"}
                 </p>
+
                 <p className="mb-0 text-muted">
                   <FaMapMarkerAlt className="me-2" />
                   {userInfo?.location?.district
-                    ? `${userInfo.location.district}, ${userInfo.location.municipality || ""}`
+                    ? `${userInfo.location.district}, ${
+                        userInfo.location.municipality || ""
+                      }`
                     : "No location added"}
                 </p>
               </div>
@@ -146,11 +325,13 @@ function ProfilePage() {
                 <FaLock className="me-2" />
                 Change Password
               </h5>
+
               {passError && (
                 <Alert variant="danger" className="py-2">
                   {passError}
                 </Alert>
               )}
+
               {passMsg && (
                 <Alert variant="success" className="py-2">
                   {passMsg}
@@ -164,28 +345,34 @@ function ProfilePage() {
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
+                    autoComplete="current-password"
                     required
                   />
                 </Form.Group>
+
                 <Form.Group className="mb-3">
                   <Form.Label>New Password</Form.Label>
                   <Form.Control
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    required
+                    autoComplete="new-password"
                     minLength={8}
+                    required
                   />
                 </Form.Group>
+
                 <Form.Group className="mb-4">
                   <Form.Label>Confirm New Password</Form.Label>
                   <Form.Control
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
                     required
                   />
                 </Form.Group>
+
                 <Button
                   variant="success"
                   type="submit"
@@ -212,6 +399,7 @@ function ProfilePage() {
                   {updateError}
                 </Alert>
               )}
+
               {updateMsg && (
                 <Alert variant="success" className="py-2">
                   {updateMsg}
@@ -231,6 +419,7 @@ function ProfilePage() {
                       />
                     </Form.Group>
                   </Col>
+
                   <Col md={6}>
                     <Form.Group className="mb-3">
                       <Form.Label>Phone Number</Form.Label>
@@ -245,6 +434,7 @@ function ProfilePage() {
                 </Row>
 
                 <hr className="my-4" />
+
                 <h6 className="fw-bold mb-3">
                   <FaMapMarkerAlt className="me-2" />
                   Location Details
@@ -262,6 +452,7 @@ function ProfilePage() {
                       />
                     </Form.Group>
                   </Col>
+
                   <Col md={4}>
                     <Form.Group className="mb-3">
                       <Form.Label>Municipality</Form.Label>
@@ -273,11 +464,13 @@ function ProfilePage() {
                       />
                     </Form.Group>
                   </Col>
+
                   <Col md={4}>
                     <Form.Group className="mb-3">
                       <Form.Label>Ward No.</Form.Label>
                       <Form.Control
                         type="number"
+                        min="1"
                         value={ward}
                         onChange={(e) => setWard(e.target.value)}
                         placeholder="e.g. 11"

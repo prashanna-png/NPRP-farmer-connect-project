@@ -17,7 +17,7 @@ const fileFilter = (req, file, cb) => {
   const mimeOk = ALLOWED_MIME.has(file.mimetype);
   const extOk = ALLOWED_EXT.has(ext);
 
-  if (mimeOk || extOk) {
+  if (mimeOk && extOk) {
     return cb(null, true);
   }
   cb(new Error(`Only image files are allowed (got ${file.mimetype} / ${ext})`));
