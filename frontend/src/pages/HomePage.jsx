@@ -8,6 +8,7 @@ import {
   Badge,
   Alert,
   Spinner,
+  Modal,
 } from "react-bootstrap";
 import { useEffect, useState } from "react";
 
@@ -18,6 +19,7 @@ import {
   FaLeaf,
   FaBug,
   FaFlask,
+  FaTimes,
 } from "react-icons/fa";
 import { FaCalendarAlt, FaMapMarkerAlt } from "react-icons/fa";
 
@@ -47,6 +49,7 @@ function HomePage() {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedNotice, setSelectedNotice] = useState(null);
 
   useEffect(() => {
     const fetchNotices = async () => {
@@ -90,7 +93,19 @@ function HomePage() {
       year: "numeric",
     });
   };
+  const getLocation = (location) => {
+    if (!location) return null;
 
+    if (typeof location === "string") return location;
+
+    return [
+      location.district,
+      location.municipality,
+      location.ward ? `Ward ${location.ward}` : null,
+    ]
+      .filter(Boolean)
+      .join(", ");
+  };
   return (
     <>
       <section className="hero-section">
@@ -254,7 +269,11 @@ function HomePage() {
                 <Row className="g-4 w-100">
                   {notices.map((notice) => (
                     <Col md={6} lg={4} key={notice._id}>
-                      <Card className="notice-card h-100">
+                      <Card
+                        className="notice-card h-100"
+                        onClick={() => setSelectedNotice(notice)}
+                        style={{ cursor: "pointer" }}
+                      >
                         {notice.imageUrl && (
                           <Card.Img
                             variant="top"
@@ -271,7 +290,11 @@ function HomePage() {
                           </div>
 
                           <Card.Title>{notice.title}</Card.Title>
-                          <Card.Text>{notice.content}</Card.Text>
+                          <Card.Text>
+                            {notice.content?.length > 130
+                              ? `${notice.content.slice(0, 130)}...`
+                              : notice.content}
+                          </Card.Text>
 
                           <div className="notice-meta mt-auto">
                             {formatDate(notice.trainingDate) && (
@@ -314,6 +337,97 @@ function HomePage() {
                   ))}
                 </Row>
               )}
+              <Modal
+                show={Boolean(selectedNotice)}
+                onHide={() => setSelectedNotice(null)}
+                centered
+                size="lg"
+                scrollable
+              >
+                {selectedNotice && (
+                  <>
+                    <Modal.Header closeButton className="border-0 pb-0">
+                      <Badge bg="success">
+                        {selectedNotice.category || "General"}
+                      </Badge>
+                    </Modal.Header>
+
+                    {selectedNotice.imageUrl && (
+                      <div className="px-3 pt-3">
+                        <img
+                          src={selectedNotice.imageUrl}
+                          alt={selectedNotice.title}
+                          className="w-100 rounded"
+                          style={{
+                            maxHeight: "420px",
+                            objectFit: "contain",
+                            backgroundColor: "#f5f5f5",
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    <Modal.Body className="p-4">
+                      <h2 className="h3 fw-bold mb-3">
+                        {selectedNotice.title}
+                      </h2>
+
+                      <div className="notice-meta d-flex flex-column gap-2 mb-4">
+                        {formatDate(selectedNotice.createdAt) && (
+                          <div>
+                            <FaCalendarAlt />
+                            <span>
+                              Published: {formatDate(selectedNotice.createdAt)}
+                            </span>
+                          </div>
+                        )}
+
+                        {formatDate(selectedNotice.trainingDate) && (
+                          <div>
+                            <FaCalendarAlt />
+                            <span>
+                              Training date:{" "}
+                              {formatDate(selectedNotice.trainingDate)}
+                            </span>
+                          </div>
+                        )}
+
+                        {getLocation(selectedNotice.location) && (
+                          <div>
+                            <FaMapMarkerAlt />
+                            <span>{getLocation(selectedNotice.location)}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <hr />
+
+                      <h3 className="h5 fw-bold mb-3">Notice Details</h3>
+
+                      <div
+                        style={{
+                          whiteSpace: "pre-wrap",
+                          overflowWrap: "anywhere",
+                          lineHeight: 1.8,
+                        }}
+                      >
+                        {selectedNotice.content ||
+                          "No additional details provided."}
+                      </div>
+                    </Modal.Body>
+
+                    <Modal.Footer className="border-0">
+                      <Button
+                        variant="success"
+                        onClick={() => setSelectedNotice(null)}
+                      >
+                        <FaTimes className="me-2" />
+                        Close
+                      </Button>
+                    </Modal.Footer>
+                  </>
+                )}
+              </Modal>
             </>
           </div>
         </Container>
