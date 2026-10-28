@@ -84,6 +84,16 @@ NPRP-farmer-connect-project/
 ├── .gitignore
 └── README.md
 ```
+## Screenshots
+
+### Main Dashboard
+![Main Dashboard](<img width="1886" height="1063" alt="image" src="https://github.com/user-attachments/assets/d3b96205-5c7e-40be-b63e-e85a8daaa654" />
+)
+
+### Farmer–Expert Communication
+![Farmer–Expert Communication](<img width="1898" height="1058" alt="image" src="https://github.com/user-attachments/assets/496a2027-388f-4dfe-89b3-93d66579d127" />
+)
+
 
 ## Getting Started
 
